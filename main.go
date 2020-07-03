@@ -12,7 +12,11 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
-var db = dynamodb.New(session.New(), aws.NewConfig().WithRegion("cn-northwest-1"))
+// var sess = dynamodb.New(session.New(), aws.NewConfig().WithRegion("cn-northwest-1"))
+var sess = dynamodb.New(session.Must(session.NewSession(&aws.Config{
+	Region: aws.String("cn-northwest-1"),
+	// Endpoint: aws.String("http://localhost:8000"),
+})))
 
 type S3Records struct {
 	Records []S3Record `json:"Records"`
@@ -63,7 +67,7 @@ type S3ObjDetail struct {
 }
 
 type S3LogItem struct {
-	Timestamp         string            `json:"id"`
+	Timestamp         string            `json:"timestamp"`
 	Key               string            `json:"key"`
 	Size              int32             `json:"Size"`
 	ETag              string            `json:"eTag"`
@@ -94,14 +98,16 @@ func HandleRequest(ctx context.Context, records S3Records) (string, error) {
 		}
 
 		if av, err := dynamodbattribute.MarshalMap(item); err != nil {
-			log.Println("Error create Dynamo record of %v", item)
+			log.Println(err)
+			log.Printf("Error create Dynamo record of %v\n", item)
 		} else {
 			input := &dynamodb.PutItemInput{
 				Item:      av,
 				TableName: aws.String("s3log"),
 			}
-			if _, err := db.PutItem(input); err != nil {
-				log.Println("Error insert Dynamo record of %v", item)
+			if _, err := sess.PutItem(input); err != nil {
+				log.Println(err)
+				log.Printf("Error insert Dynamo record of %v\n", item)
 			} else {
 				cnt += 1
 			}
