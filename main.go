@@ -70,6 +70,7 @@ type S3LogItem struct {
 	Timestamp         string            `json:"timestamp"`
 	Key               string            `json:"key"`
 	Size              int32             `json:"Size"`
+	EventName         string            `json:"eventName"`
 	ETag              string            `json:"eTag"`
 	EventVersion      string            `json:"eventVersion"`
 	EventSource       string            `json:"eventSource"`
@@ -88,6 +89,7 @@ func HandleRequest(ctx context.Context, records S3Records) (string, error) {
 			Timestamp:         record.EventTime,
 			Key:               record.S3.Detail.Key,
 			Size:              record.S3.Detail.Size,
+			EventName:         record.EventName,
 			ETag:              record.S3.Detail.ETag,
 			EventVersion:      record.EventVersion,
 			EventSource:       record.EventSource,
